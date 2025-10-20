@@ -52,10 +52,23 @@ export function MushafPage({
     }
   };
 
+  // Zoom yapıldığında scroll'u etkinleştir
+  const isZoomed = zoomLevel > 1.05;
+
   return (
-    <div className="relative w-full h-full flex items-center justify-center bg-[#f5f1e8] dark:bg-[#2a2a2a] overflow-hidden touch-none select-none">
+    <div
+      className={`relative w-full h-full flex items-center justify-center bg-[#f5f1e8] dark:bg-[#2a2a2a] select-none ${
+        isZoomed
+          ? 'overflow-auto touch-auto'
+          : 'overflow-hidden touch-none'
+      }`}
+      style={{
+        // Mobilde smooth scroll için
+        WebkitOverflowScrolling: 'touch',
+      }}
+    >
       {!imageLoaded && (
-        <div className="absolute inset-0 flex items-center justify-center">
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div className="flex flex-col items-center gap-4">
             <div className="w-16 h-16 border-4 border-[#1a4d2e] border-t-transparent rounded-full animate-spin"></div>
             <p className="text-[#1a4d2e] dark:text-[#d4af37] font-medium">
@@ -66,9 +79,9 @@ export function MushafPage({
       )}
 
       <div
-        className={`relative w-full h-full transition-all duration-300 ${
+        className={`relative transition-all duration-300 ${
           imageLoaded ? 'opacity-100' : 'opacity-0'
-        }`}
+        } ${isZoomed ? 'min-w-full min-h-full' : 'w-full h-full'}`}
         style={{
           transform: `scale(${zoomLevel})`,
           transformOrigin: 'center',
@@ -95,27 +108,36 @@ export function MushafPage({
               onLoad={handleImageLoad}
               onError={handleImageError}
               draggable={false}
-              style={{ userSelect: 'none', pointerEvents: 'none' }}
+              style={{
+                userSelect: 'none',
+                // Zoom yapıldığında pointer events'i etkinleştir
+                pointerEvents: isZoomed ? 'auto' : 'none'
+              }}
             />
           )}
 
-          <button
-            onClick={handleLeftClick}
-            className={`absolute left-0 top-0 bottom-0 w-1/4 cursor-pointer opacity-0 hover:opacity-10 transition-opacity bg-gradient-to-r from-[#1a4d2e] to-transparent ${
-              !canGoPrev || isFlipping ? 'cursor-not-allowed' : ''
-            }`}
-            disabled={!canGoPrev || isFlipping}
-            aria-label="Önceki sayfa"
-          />
+          {/* Navigation butonları sadece zoom yapılmadığında göster */}
+          {!isZoomed && (
+            <>
+              <button
+                onClick={handleLeftClick}
+                className={`absolute left-0 top-0 bottom-0 w-1/4 cursor-pointer opacity-0 hover:opacity-10 transition-opacity bg-gradient-to-r from-[#1a4d2e] to-transparent ${
+                  !canGoPrev || isFlipping ? 'cursor-not-allowed' : ''
+                }`}
+                disabled={!canGoPrev || isFlipping}
+                aria-label="Önceki sayfa"
+              />
 
-          <button
-            onClick={handleRightClick}
-            className={`absolute right-0 top-0 bottom-0 w-1/4 cursor-pointer opacity-0 hover:opacity-10 transition-opacity bg-gradient-to-l from-[#1a4d2e] to-transparent ${
-              !canGoNext || isFlipping ? 'cursor-not-allowed' : ''
-            }`}
-            disabled={!canGoNext || isFlipping}
-            aria-label="Sonraki sayfa"
-          />
+              <button
+                onClick={handleRightClick}
+                className={`absolute right-0 top-0 bottom-0 w-1/4 cursor-pointer opacity-0 hover:opacity-10 transition-opacity bg-gradient-to-l from-[#1a4d2e] to-transparent ${
+                  !canGoNext || isFlipping ? 'cursor-not-allowed' : ''
+                }`}
+                disabled={!canGoNext || isFlipping}
+                aria-label="Sonraki sayfa"
+              />
+            </>
+          )}
         </div>
       </div>
     </div>

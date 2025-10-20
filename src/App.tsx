@@ -142,8 +142,8 @@ function App() {
   }, [settings.autoPlayEnabled, settings.autoPlayInterval, canGoNext, isFlipping, nextPage]);
 
   return (
-    <div className="fixed inset-0 bg-[#f5f1e8] dark:bg-[#2a2a2a] sepia:bg-[#f4ecd8] overflow-hidden">
-      <div className="fixed top-4 left-1/2 -translate-x-1/2 z-30 bg-[#1a4d2e]/90 backdrop-blur-sm text-white px-6 py-2 rounded-full shadow-lg">
+    <div className="fixed inset-0 bg-[#f5f1e8] dark:bg-[#2a2a2a] sepia:bg-[#f4ecd8]">
+      <div className="fixed top-4 left-1/2 -translate-x-1/2 z-30 bg-[#1a4d2e]/90 backdrop-blur-sm text-white px-6 py-2 rounded-full shadow-lg pointer-events-none">
         <h1 className="text-lg font-bold text-center">Kuran-ı Kerim</h1>
       </div>
 
