@@ -57,18 +57,15 @@ export function MushafPage({
 
   return (
     <div
-      className={`relative w-full h-full flex items-center justify-center bg-[#f5f1e8] dark:bg-[#2a2a2a] select-none ${
-        isZoomed
-          ? 'overflow-auto touch-auto'
-          : 'overflow-hidden touch-none'
-      }`}
+      className="relative w-full h-full overflow-auto bg-[#f5f1e8] dark:bg-[#2a2a2a] select-none"
       style={{
         // Mobilde smooth scroll için
         WebkitOverflowScrolling: 'touch',
+        touchAction: isZoomed ? 'pan-x pan-y' : 'none',
       }}
     >
       {!imageLoaded && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
           <div className="flex flex-col items-center gap-4">
             <div className="w-16 h-16 border-4 border-[#1a4d2e] border-t-transparent rounded-full animate-spin"></div>
             <p className="text-[#1a4d2e] dark:text-[#d4af37] font-medium">
@@ -79,16 +76,17 @@ export function MushafPage({
       )}
 
       <div
-        className={`relative transition-all duration-300 ${
-          imageLoaded ? 'opacity-100' : 'opacity-0'
-        } ${isZoomed ? 'min-w-full min-h-full' : 'w-full h-full'}`}
+        className="relative flex items-center justify-center transition-opacity duration-300"
         style={{
-          transform: `scale(${zoomLevel})`,
-          transformOrigin: 'center',
+          width: `${zoomLevel * 100}%`,
+          height: `${zoomLevel * 100}%`,
+          minWidth: '100%',
+          minHeight: '100%',
+          opacity: imageLoaded ? 1 : 0,
         }}
       >
         <div
-          className={`relative w-full h-full overflow-hidden transition-transform duration-800 ${
+          className={`relative w-full h-full transition-transform duration-800 ${
             isFlipping ? 'scale-95 opacity-70' : 'scale-100 opacity-100'
           }`}
         >
@@ -110,8 +108,7 @@ export function MushafPage({
               draggable={false}
               style={{
                 userSelect: 'none',
-                // Zoom yapıldığında pointer events'i etkinleştir
-                pointerEvents: isZoomed ? 'auto' : 'none'
+                pointerEvents: 'none',
               }}
             />
           )}
