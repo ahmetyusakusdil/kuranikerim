@@ -97,6 +97,10 @@ function App() {
     setZoomLevel((prev) => Math.max(prev - 0.1, 0.5));
   };
 
+  const handleZoomChange = (newZoom: number) => {
+    setZoomLevel(newZoom);
+  };
+
   const handleToggleTheme = () => {
     const themes: Array<'light' | 'dark' | 'sepia'> = ['light', 'dark', 'sepia'];
     const currentIndex = themes.indexOf(settings.theme);
@@ -156,6 +160,7 @@ function App() {
           canGoNext={canGoNext}
           canGoPrev={canGoPrev}
           zoomLevel={zoomLevel}
+          onZoomChange={handleZoomChange}
         />
       </div>
 

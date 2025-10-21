@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { generatePageUrl, getPageRange } from '../utils/pageUtils';
 
 interface MushafPageProps {
@@ -9,6 +9,7 @@ interface MushafPageProps {
   canGoNext: boolean;
   canGoPrev: boolean;
   zoomLevel: number;
+  onZoomChange: (newZoom: number) => void;
 }
 
 export function MushafPage({
@@ -19,16 +20,80 @@ export function MushafPage({
   canGoNext,
   canGoPrev,
   zoomLevel,
+  onZoomChange,
 }: MushafPageProps) {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
   const imageUrl = generatePageUrl(imageIndex);
   const pageRange = getPageRange(imageIndex);
 
+  const containerRef = useRef<HTMLDivElement>(null);
+  const lastDistanceRef = useRef<number>(0);
+  const isPinchingRef = useRef<boolean>(false);
+
   useEffect(() => {
     setImageLoaded(false);
     setImageError(false);
   }, [imageIndex]);
+
+  // Pinch-to-zoom gesture handler
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const handleTouchStart = (e: TouchEvent) => {
+      if (e.touches.length === 2) {
+        isPinchingRef.current = true;
+        // İki parmak arasındaki mesafeyi hesapla
+        const touch1 = e.touches[0];
+        const touch2 = e.touches[1];
+        const distance = Math.hypot(
+          touch2.clientX - touch1.clientX,
+          touch2.clientY - touch1.clientY
+        );
+        lastDistanceRef.current = distance;
+      }
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (e.touches.length === 2 && isPinchingRef.current) {
+        e.preventDefault(); // Varsayılan zoom davranışını engelle
+
+        const touch1 = e.touches[0];
+        const touch2 = e.touches[1];
+        const distance = Math.hypot(
+          touch2.clientX - touch1.clientX,
+          touch2.clientY - touch1.clientY
+        );
+
+        if (lastDistanceRef.current > 0) {
+          // Mesafe farkına göre zoom seviyesini ayarla
+          const delta = distance - lastDistanceRef.current;
+          const zoomDelta = delta * 0.01; // Hassasiyet ayarı (daha hassas)
+          const newZoom = Math.max(0.5, Math.min(3, zoomLevel + zoomDelta));
+
+          onZoomChange(newZoom);
+        }
+
+        lastDistanceRef.current = distance;
+      }
+    };
+
+    const handleTouchEnd = () => {
+      lastDistanceRef.current = 0;
+      isPinchingRef.current = false;
+    };
+
+    container.addEventListener('touchstart', handleTouchStart, { passive: false });
+    container.addEventListener('touchmove', handleTouchMove, { passive: false });
+    container.addEventListener('touchend', handleTouchEnd);
+
+    return () => {
+      container.removeEventListener('touchstart', handleTouchStart);
+      container.removeEventListener('touchmove', handleTouchMove);
+      container.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [zoomLevel, onZoomChange]);
 
   const handleImageLoad = () => {
     setImageLoaded(true);
@@ -57,11 +122,13 @@ export function MushafPage({
 
   return (
     <div
+      ref={containerRef}
       className="relative w-full h-full overflow-auto bg-[#f5f1e8] dark:bg-[#2a2a2a] select-none"
       style={{
         // Mobilde smooth scroll için
         WebkitOverflowScrolling: 'touch',
-        touchAction: isZoomed ? 'pan-x pan-y' : 'none',
+        // Zoom yapıldığında pan, normal durumda pinch-zoom
+        touchAction: isZoomed ? 'pan-x pan-y' : 'pan-x pan-y pinch-zoom',
       }}
     >
       {!imageLoaded && (
