@@ -44,7 +44,6 @@ export function MushafPage({
     const handleTouchStart = (e: TouchEvent) => {
       if (e.touches.length === 2) {
         isPinchingRef.current = true;
-        // İki parmak arasındaki mesafeyi hesapla
         const touch1 = e.touches[0];
         const touch2 = e.touches[1];
         const distance = Math.hypot(
@@ -57,7 +56,7 @@ export function MushafPage({
 
     const handleTouchMove = (e: TouchEvent) => {
       if (e.touches.length === 2 && isPinchingRef.current) {
-        e.preventDefault(); // Varsayılan zoom davranışını engelle
+        e.preventDefault();
 
         const touch1 = e.touches[0];
         const touch2 = e.touches[1];
@@ -67,11 +66,9 @@ export function MushafPage({
         );
 
         if (lastDistanceRef.current > 0) {
-          // Oran bazlı zoom (daha hassas ve doğal)
           const scale = distance / lastDistanceRef.current;
           const newZoom = Math.max(0.5, Math.min(3, zoomLevel * scale));
 
-          // Minimum değişim threshold'u - çok küçük değişimleri görmezden gel
           if (Math.abs(newZoom - zoomLevel) > 0.01) {
             onZoomChange(newZoom);
           }
@@ -119,23 +116,15 @@ export function MushafPage({
     }
   };
 
-  // Zoom yapıldığında scroll'u etkinleştir
   const isZoomed = zoomLevel > 1.05;
 
   return (
     <div
       ref={containerRef}
-      className="relative w-full overflow-auto bg-[#f5f1e8] dark:bg-[#2a2a2a] select-none"
+      className="relative w-full h-full overflow-auto bg-[#f5f1e8] dark:bg-[#2a2a2a] select-none flex items-center justify-center"
       style={{
-        // Mobilde smooth scroll için
         WebkitOverflowScrolling: 'touch',
-        // Zoom yapıldığında pan, normal durumda pinch-zoom
         touchAction: isZoomed ? 'pan-x pan-y' : 'pan-x pan-y pinch-zoom',
-        // Header (64px) ve toolbar (100px) için alan bırak
-        height: 'calc(100vh - 0px)',
-        paddingTop: '64px',
-        paddingBottom: '100px',
-        boxSizing: 'border-box',
       }}
     >
       {!imageLoaded && (
@@ -150,12 +139,12 @@ export function MushafPage({
       )}
 
       <div
-        className="relative flex items-center justify-center transition-opacity duration-300"
+        className="relative transition-opacity duration-300"
         style={{
-          width: `${zoomLevel * 100}%`,
-          height: `${zoomLevel * 100}%`,
+          width: `${100 * zoomLevel}%`,
+          height: `${100 * zoomLevel}%`,
           minWidth: '100%',
-          minHeight: 'calc(100vh - 164px)', // 100vh - paddingTop - paddingBottom
+          minHeight: '100%',
           opacity: imageLoaded ? 1 : 0,
         }}
       >
@@ -187,7 +176,6 @@ export function MushafPage({
             />
           )}
 
-          {/* Navigation butonları sadece zoom yapılmadığında göster */}
           {!isZoomed && (
             <>
               <button
