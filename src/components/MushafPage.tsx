@@ -67,12 +67,14 @@ export function MushafPage({
         );
 
         if (lastDistanceRef.current > 0) {
-          // Mesafe farkına göre zoom seviyesini ayarla
-          const delta = distance - lastDistanceRef.current;
-          const zoomDelta = delta * 0.01; // Hassasiyet ayarı (daha hassas)
-          const newZoom = Math.max(0.5, Math.min(3, zoomLevel + zoomDelta));
+          // Oran bazlı zoom (daha hassas ve doğal)
+          const scale = distance / lastDistanceRef.current;
+          const newZoom = Math.max(0.5, Math.min(3, zoomLevel * scale));
 
-          onZoomChange(newZoom);
+          // Minimum değişim threshold'u - çok küçük değişimleri görmezden gel
+          if (Math.abs(newZoom - zoomLevel) > 0.01) {
+            onZoomChange(newZoom);
+          }
         }
 
         lastDistanceRef.current = distance;
@@ -123,12 +125,17 @@ export function MushafPage({
   return (
     <div
       ref={containerRef}
-      className="relative w-full h-full overflow-auto bg-[#f5f1e8] dark:bg-[#2a2a2a] select-none"
+      className="relative w-full overflow-auto bg-[#f5f1e8] dark:bg-[#2a2a2a] select-none"
       style={{
         // Mobilde smooth scroll için
         WebkitOverflowScrolling: 'touch',
         // Zoom yapıldığında pan, normal durumda pinch-zoom
         touchAction: isZoomed ? 'pan-x pan-y' : 'pan-x pan-y pinch-zoom',
+        // Header (64px) ve toolbar (100px) için alan bırak
+        height: 'calc(100vh - 0px)',
+        paddingTop: '64px',
+        paddingBottom: '100px',
+        boxSizing: 'border-box',
       }}
     >
       {!imageLoaded && (
@@ -148,7 +155,7 @@ export function MushafPage({
           width: `${zoomLevel * 100}%`,
           height: `${zoomLevel * 100}%`,
           minWidth: '100%',
-          minHeight: '100%',
+          minHeight: 'calc(100vh - 164px)', // 100vh - paddingTop - paddingBottom
           opacity: imageLoaded ? 1 : 0,
         }}
       >
